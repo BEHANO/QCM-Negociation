@@ -94,7 +94,9 @@ const questions = [
 let current = 0;
 let good = 0;
 let bad = 0;
-let timer = 2700; // 10 minutes
+let timer = 2700; // 45 minutes
+let userAnswersOuvertes = [];
+
 
 function loadQuestion() {
   const q = questions[current];
@@ -154,7 +156,7 @@ function showEtudeDeCas() {
   const box = document.getElementById("question-box");
   box.classList.remove("hidden");
   box.innerHTML = `<h2>Étude de cas</h2>`;
-  
+
   etudeDeCas.forEach((item, i) => {
     const label = document.createElement("label");
     label.innerHTML = `<p>${item.q}</p><textarea rows="4" style="width: 100%; margin-bottom: 20px;"></textarea>`;
@@ -162,7 +164,29 @@ function showEtudeDeCas() {
   });
 
   const btn = document.createElement("button");
+  btn.textContent = "Afficher la correction";
+  btn.className = "btn btn-success mt-4";
+  btn.onclick = showCorrectionEtudeCas;
+  box.appendChild(btn);
+}
+
+function showCorrectionEtudeCas() {
+  const box = document.getElementById("question-box");
+  box.innerHTML = `<h2 class="text-xl font-bold mb-4">Corrigé de l’étude de cas</h2>`;
+
+  etudeDeCas.forEach((item, i) => {
+    const div = document.createElement("div");
+    div.className = "mb-4 p-4 bg-gray-100 rounded";
+    div.innerHTML = `
+      <p class="font-semibold">${item.q}</p>
+      <p class="text-green-700 mt-2">✅ ${etudeCasCorrections[i]}</p>
+    `;
+    box.appendChild(div);
+  });
+
+  const btn = document.createElement("button");
   btn.textContent = "Continuer vers les questions ouvertes";
+  btn.className = "btn btn-primary mt-6";
   btn.onclick = showQuestionsOuvertes;
   box.appendChild(btn);
 }
@@ -170,7 +194,7 @@ function showEtudeDeCas() {
 
 function showQuestionsOuvertes() {
   const box = document.getElementById("question-box");
-  box.innerHTML = `<h2>Questions Ouvertes</h2>`;
+  box.innerHTML = `<h2 class="text-xl font-bold mb-4">Questions Ouvertes</h2>`;
 
   questionsOuvertes.forEach((question, index) => {
     const div = document.createElement("div");
@@ -181,16 +205,59 @@ function showQuestionsOuvertes() {
     box.appendChild(div);
   });
 
+  // ✅ Création du bouton "Soumettre"
   const btn = document.createElement("button");
   btn.textContent = "Soumettre mes réponses";
+  btn.className = "btn btn-success mt-4";
   btn.onclick = () => {
-    alert("Merci ! Tes réponses aux questions ouvertes ont été saisies.");
-    window.location.reload(); // ou afficher un récap plus tard
+    userAnswersOuvertes = [];
+    const textareas = document.querySelectorAll("textarea");
+    textareas.forEach(t => userAnswersOuvertes.push(t.value.trim()));
+    showCorrectionQuestionsOuvertes();
   };
+
+  // ✅ N'OUBLIE PAS de l'ajouter au conteneur :
   box.appendChild(btn);
 }
 
+function showCorrectionQuestionsOuvertes() {
+  const box = document.getElementById("question-box");
+  box.innerHTML = `<h2 class="text-xl font-bold mb-4">Corrigé des questions ouvertes</h2>`;
 
+  questionsOuvertes.forEach((q, i) => {
+    const div = document.createElement("div");
+    div.className = "mb-4 p-4 bg-gray-100 rounded";
+    div.innerHTML = `
+      <p class="font-semibold">${i + 1}. ${q}</p>
+      <p class="text-blue-700"><strong>📝 Ta réponse :</strong> ${userAnswersOuvertes[i] || "(non répondu)"}</p>
+      <p class="text-green-700"><strong>✅ Correction :</strong> ${correctionsOuvertes[i]}</p>
+    `;
+    box.appendChild(div);
+  });
+
+  // Calculer une note (facultatif)
+  let note = Math.round((userAnswersOuvertes.filter(rep => rep !== "").length / questionsOuvertes.length) * 20);
+  const noteEl = document.createElement("p");
+  noteEl.innerHTML = `📊 <strong>Note estimée :</strong> ${note}/20`;
+  noteEl.className = "text-lg text-center my-4 font-semibold text-purple-700";
+  box.appendChild(noteEl);
+
+  // Bouton de téléchargement
+  const downloadBtn = document.createElement("button");
+  downloadBtn.textContent = "📄 Télécharger ma copie corrigée (PDF)";
+  downloadBtn.className = "btn btn-accent mt-4 mr-2";
+  downloadBtn.onclick = () => {
+    html2pdf().from(box).save("copie_corrigee.pdf");
+  };
+  box.appendChild(downloadBtn);
+
+  // Bouton retour
+  const btn = document.createElement("button");
+  btn.textContent = "Terminer";
+  btn.className = "btn btn-primary mt-4 ml-2";
+  btn.onclick = () => window.location.reload();
+  box.appendChild(btn);
+}
 
 // TIMER
 function startTimer() {
@@ -223,6 +290,11 @@ const etudeDeCas = [
     q: "3. Que faire à l’avenir ?"
   }
 ];
+const etudeCasCorrections = [
+  "Il a manqué une consultation des utilisateurs finaux durant la phase de conception.",
+  "L'implication des utilisateurs permet de garantir que l'outil corresponde à leurs besoins réels.",
+  "À l'avenir, il faut impliquer les utilisateurs dans les étapes de conception, test et validation."
+];
 const questionsOuvertes = [
   "Pourquoi est-il important de conclure un contrat dans un projet informatique ?",
   "Quel est l'objectif du contrat ?",
@@ -252,5 +324,35 @@ const questionsOuvertes = [
   "Quelle est la tranche d'âge dominante sur le marché ivoirien ?",
   "Quel est l’impact de la jeunesse sur la demande de services ?",
   "Comment évolue l’offre Internet en Côte d'Ivoire ?"
+];
+const correctionsOuvertes = [
+  "Pour encadrer les responsabilités, les délais, le périmètre et les obligations entre les parties.",
+  "Fixer les conditions d’exécution, les objectifs, les engagements mutuels.",
+  "Une clause qui suspend l’exécution du contrat à la réalisation d’un événement futur.",
+  "Un contrat où le fournisseur livre un produit fini prêt à l’emploi.",
+  "Pour assurer un suivi technique et corriger les éventuels dysfonctionnements.",
+  "Car elle permet de valider officiellement la conformité des livrables.",
+  "Une remarque officielle sur une non-conformité constatée lors de la réception.",
+  "Protéger contre les risques liés à des erreurs, pertes de données ou attaques.",
+  "Garantir une concurrence équitable et protéger les utilisateurs.",
+  "Stimuler la qualité, faire baisser les prix, favoriser l’innovation.",
+  "Les acteurs présents, leurs parts de marché, les services proposés.",
+  "Orange, MTN, Moov.",
+  "Téléphonie, Internet, mobile money, TV, cloud, etc.",
+  "Identifier les concurrents, les opportunités, les menaces.",
+  "Investissements élevés, autorisations, régulation stricte.",
+  "Très élevé : équipements, infrastructure, licences.",
+  "Promotions, bonus, offres groupées, partenariat local.",
+  "Pour se différencier et répondre à l’évolution des besoins.",
+  "Assurer une offre conforme aux règles et équitable.",
+  "Offre groupée Internet + TV + Téléphonie.",
+  "Environ 150 % (plus d’un téléphone par habitant).",
+  "Faciliter les transactions, sécuriser les paiements.",
+  "Zones rurales et enclavées principalement.",
+  "Elles représentent un nouveau marché à fort potentiel.",
+  "Proposer des offres adaptées à leurs revenus et besoins.",
+  "Les jeunes de 15-35 ans.",
+  "Elle augmente la demande pour des services rapides et accessibles.",
+  "Progressivement, avec la fibre, la 4G+, le satellite."
 ];
 
