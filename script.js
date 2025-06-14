@@ -155,11 +155,17 @@ function showResults() {
 function showEtudeDeCas() {
   const box = document.getElementById("question-box");
   box.classList.remove("hidden");
-  box.innerHTML = `<h2>Étude de cas</h2>`;
+  box.innerHTML = `
+    <h2 class="text-xl font-bold mb-4">Étude de cas</h2>
+    <div class="bg-blue-100 p-4 rounded mb-6">
+      <p><strong>Situation :</strong><br>
+      Dans un projet de refonte d’interface, les utilisateurs finaux n’ont pas été consultés. À la livraison, ils trouvent l’outil peu adapté à leurs usages quotidiens.</p>
+    </div>
+  `;
 
   etudeDeCas.forEach((item, i) => {
     const label = document.createElement("label");
-    label.innerHTML = `<p>${item.q}</p><textarea rows="4" style="width: 100%; margin-bottom: 20px;"></textarea>`;
+    label.innerHTML = `<p class="font-semibold">${item.q}</p><textarea rows="4" style="width: 100%; margin-bottom: 20px;" class="textarea textarea-bordered w-full"></textarea>`;
     box.appendChild(label);
   });
 
