@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>QCM Négociation Informatique</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      plugins: [tailwindcss],
+      theme: {
+        extend: {}
+      }
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/daisyui@latest"></script>
+</head>
+<body class="bg-base-200 min-h-screen flex items-center justify-center">
+  <div class="card w-full max-w-3xl bg-base-100 shadow-xl p-8">
+    <h1 class="text-3xl font-bold text-center mb-6 text-primary">QCM Négociation Informatique</h1>
+
+    <div id="timer" class="text-right text-error font-semibold mb-4">
+      Temps restant : <span id="time">--:--</span>
+    </div>
+
+    <div id="question-box">
+      <h2 id="question-title" class="text-xl font-bold mb-4">Chargement...</h2>
+      <form id="answers-form" class="flex flex-col gap-2"></form>
+      <button id="next-btn" class="btn btn-primary mt-6">Suivant</button>
+    </div>
+
+    <div id="result-box" class="hidden text-center mt-8">
+      <h2 class="text-2xl font-bold mb-4 text-success">Résultat final</h2>
+      <p class="mb-2">✅ Bonnes réponses : <span id="good-count" class="font-bold"></span></p>
+      <p class="mb-2">❌ Mauvaises réponses : <span id="bad-count" class="font-bold"></span></p>
+      <p class="mb-4">📊 Moyenne : <span id="score" class="font-bold text-blue-600"></span>/20</p>
+      <button onclick="window.location.reload()" class="btn btn-secondary mt-4">Recommencer</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
