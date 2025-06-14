@@ -80,22 +80,36 @@ const questions = [
     answer: 2
   },
   {
-    q: "Exemples de négociation en informatique ?",
+    q: "Quel est un élément clé dans un contrat informatique ?",
     options: [
-      "Choix d'un fournisseur cloud",
-      "Organisation d'une réunion",
-      "Achat de matériel informatique",
-      "Formation interne"
+      "La nationalité du développeur",
+      "Le type de clavier utilisé",
+      "Le niveau de service attendu (SLA)",
+      "Le nombre de pages du contrat"
     ],
-    answer: [0, 2] // QCM multiple (sera géré plus tard si tu veux)
+    answer: 2
+  },
+  {
+    q: "Pourquoi est-il important d'impliquer les utilisateurs dans un projet informatique ?",
+    options: [
+      "Pour les former à l'informatique",
+      "Pour s'assurer que la solution réponde à leurs besoins",
+      "Pour réduire les coûts de l’entreprise",
+      "Pour tester leurs compétences"
+    ],
+    answer: 1
   }
 ];
+
 
 let current = 0;
 let good = 0;
 let bad = 0;
-let timer = 2700; // 45 minutes
+let timer = 1500; // 25 minutes
 let userAnswersOuvertes = [];
+let userAnswersQCM = [];
+
+
 
 
 function loadQuestion() {
@@ -116,18 +130,16 @@ document.getElementById("next-btn").addEventListener("click", () => {
     return;
   }
 
-  const userAnswer = parseInt(selected.value);
-  const correctAnswer = questions[current].answer;
+ const userAnswer = parseInt(selected.value);
+const correctAnswer = questions[current].answer;
 
-  if (Array.isArray(correctAnswer)) {
-    // Gérer les QCM multiples plus tard si nécessaire
-  } else {
-    if (userAnswer === correctAnswer) {
-      good++;
-    } else {
-      bad++;
-    }
-  }
+userAnswersQCM.push(userAnswer); // 🟢 on stocke la réponse
+
+if (userAnswer === correctAnswer) {
+  good++;
+} else {
+  bad++;
+}
 
   current++;
   if (current < questions.length) {
@@ -143,13 +155,46 @@ function showResults() {
   document.getElementById("good-count").textContent = good;
   document.getElementById("bad-count").textContent = bad;
 
+  const recap = document.createElement("div");
+recap.className = "text-left mt-8";
+recap.innerHTML = `<h3 class="text-xl font-semibold mb-4">📋 Correction détaillée :</h3>`;
+
+questions.forEach((q, i) => {
+  const user = userAnswersQCM[i];
+  const correct = q.answer;
+
+  recap.innerHTML += `
+    <div class="mb-2 p-3 rounded ${
+      user === correct ? "bg-green-100" : "bg-red-100"
+    }">
+      <p class="font-semibold">${i + 1}. ${q.q}</p>
+      ${
+        user === correct
+          ? `<p class="text-green-700">✅ Bonne réponse : ${q.options[correct]}</p>`
+          : `
+            <p class="text-red-700">❌ Ta réponse : ${q.options[user]}</p>
+            <p class="text-green-700">✅ Bonne réponse : ${q.options[correct]}</p>
+          `
+      }
+    </div>
+  `;
+});
+
+document.getElementById("result-box").appendChild(recap);
+
   const score = Math.round((good / questions.length) * 20);
   document.getElementById("score").textContent = score;
 
   const btn = document.createElement("button");
-  btn.textContent = "Répondre à l'étude de cas";
-  btn.onclick = showEtudeDeCas;
-  document.getElementById("result-box").appendChild(btn);
+btn.textContent = "Répondre à l'étude de cas";
+btn.className = "btn btn-primary mt-4";
+btn.onclick = () => {
+  document.getElementById("result-box").classList.add("hidden"); // cacher le bloc
+  document.getElementById("result-box").innerHTML = ""; // effacer le contenu
+  showEtudeDeCas();
+};
+document.getElementById("result-box").appendChild(btn);
+
 }
 
 function showEtudeDeCas() {
@@ -266,21 +311,46 @@ function showCorrectionQuestionsOuvertes() {
 }
 
 // TIMER
+function playBeep() {
+  const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+  beep.play();
+}
+
 function startTimer() {
   const timeEl = document.getElementById("time");
+  const progressBar = document.getElementById("progress-bar");
+  const total = timer;
+
   const interval = setInterval(() => {
     const minutes = Math.floor(timer / 60);
     const seconds = timer % 60;
     timeEl.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-    timer--;
 
-    if (timer < 0) {
+    // Barre de progression
+    const percent = (timer / total) * 100;
+    if (progressBar) progressBar.style.width = `${percent}%`;
+
+    // Alerte à 5 min
+    if (timer === 300) {
+      alert("⏰ Il ne reste plus que 5 minutes !");
+      if (progressBar) {
+        progressBar.classList.remove("bg-blue-600");
+        progressBar.classList.add("bg-red-500");
+      }
+    }
+
+    if (timer <= 0) {
       clearInterval(interval);
-      alert("Temps écoulé !");
+      playBeep();
+      alert("⛔ Temps écoulé !");
       showResults();
     }
+
+    timer--;
   }, 1000);
 }
+
+
 
 loadQuestion();
 startTimer();
